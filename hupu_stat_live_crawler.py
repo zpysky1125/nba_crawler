@@ -26,8 +26,10 @@ while True:
         link = link[0]['href']
         stat = requests.get(link, headers=header)
         stat_soup = BeautifulSoup(stat.text, 'html.parser')
-        tt = stat_soup.select('div[class^="team_num"]')[0].get_text()
-        cur_match_status = [tt.encode('utf-8')]
+        tt = stat_soup.select('div[class^="team_num"]')
+        if len(tt) == 0:
+            continue
+        cur_match_status = [tt.encode('utf-8')[0].get_text()]
         tables = stat_soup.select('table[id]')
 
         ns = []

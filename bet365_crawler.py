@@ -35,31 +35,35 @@ while True:
     finally:
         sleep(2.5)
 
-    matches = driver.find_elements_by_class_name("sl-CouponParticipantGameLineTwoWay")
-    times = driver.find_elements_by_class_name("sl-CouponParticipantGameLineTwoWay_Time")
-    teams = driver.find_elements_by_class_name("sl-CouponParticipantGameLineTwoWay_NameText")
-    spreads = driver.find_elements_by_class_name("gl-ParticipantCentered_Name")
-    spread_odds = driver.find_elements_by_class_name("gl-ParticipantCentered_Odds")
-    scores = driver.find_elements_by_class_name('pi-ScoreVariantDefault')
-    num_match = len(times)
+    try:
+        matches = driver.find_elements_by_class_name("sl-CouponParticipantGameLineTwoWay")
+        times = driver.find_elements_by_class_name("sl-CouponParticipantGameLineTwoWay_Time")
+        teams = driver.find_elements_by_class_name("sl-CouponParticipantGameLineTwoWay_NameText")
+        spreads = driver.find_elements_by_class_name("gl-ParticipantCentered_Name")
+        spread_odds = driver.find_elements_by_class_name("gl-ParticipantCentered_Odds")
+        scores = driver.find_elements_by_class_name('pi-ScoreVariantDefault')
+        num_match = len(times)
 
-    matches = [match.text.encode('utf-8') for match in matches]
-    times = [matches[i].split(' ')[0] for i in range(0, 2*num_match, 2)]
+        matches = [match.text.encode('utf-8') for match in matches]
+        times = [matches[i].split(' ')[0] for i in range(0, 2 * num_match, 2)]
 
-    ongoing = False
-    for tt in times:
-        if 'Q' in tt:
-            ongoing = True
-            break
-    if not ongoing:
+        ongoing = False
+        for tt in times:
+            if 'Q' in tt:
+                ongoing = True
+                break
+        if not ongoing:
+            continue
+
+        teams = [[teams[i].text.encode('utf-8'), teams[i + 1].text.encode('utf-8')] for i in range(0, num_match * 2, 2)]
+        spread_odd = [[[spreads[i].text.encode('utf-8'), spread_odds[i].text.encode('utf-8')], [spreads[i + 1].text.encode('utf-8'), spread_odds[i + 1].text.encode('utf-8')]] for i in range(0, num_match * 4, 2)]
+        spread = spread_odd[0: num_match]
+        total = spread_odd[num_match: num_match * 2]
+        money_line = [[spread_odds[i].text.encode('utf-8'), spread_odds[i + 1].text.encode('utf-8')] for i in range(num_match * 4, num_match * 6, 2)]
+        scores = [[int(scores[i].text), int(scores[i + 1].text)] if i < len(scores) - 1 else [0, 0] for i in range(0, 2 * num_match, 2)]
+
+    except selenium.common.exceptions.StaleElementReferenceException:
         continue
-
-    teams = [[teams[i].text.encode('utf-8'), teams[i+1].text.encode('utf-8')] for i in range(0, num_match*2, 2)]
-    spread_odd = [[[spreads[i].text.encode('utf-8'), spread_odds[i].text.encode('utf-8')], [spreads[i+1].text.encode('utf-8'), spread_odds[i+1].text.encode('utf-8')]] for i in range(0, num_match*4, 2)]
-    spread = spread_odd[0: num_match]
-    total = spread_odd[num_match: num_match * 2]
-    money_line = [[spread_odds[i].text.encode('utf-8'), spread_odds[i+1].text.encode('utf-8')] for i in range(num_match*4, num_match*6, 2)]
-    scores = [[int(scores[i].text), int(scores[i+1].text)] if i < len(scores)-1 else [0, 0] for i in range(0, 2*num_match, 2)]
 
     cur_match_statuses = [[times[i], teams[i][0], teams[i][1], scores[i][0], scores[i][1], spread[i][0][0], spread[i][0][1], spread[i][1][0], spread[i][1][1], total[i][0][0], total[i][0][1], total[i][1][0], total[i][1][1], money_line[i][0], money_line[i][1]] for i in range(num_match)]
     cur_match_teams = {(teams[i][0], teams[i][1]) for i in range(num_match)}
